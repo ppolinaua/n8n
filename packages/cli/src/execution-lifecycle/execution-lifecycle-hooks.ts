@@ -1,6 +1,7 @@
 import { Logger } from '@n8n/backend-common';
 import type { User } from '@n8n/db';
 import { ExecutionRepository, UserRepository } from '@n8n/db';
+import { In } from '@n8n/typeorm';
 import { LifecycleMetadata } from '@n8n/decorators';
 import { Container, Service } from '@n8n/di';
 import { stringify } from 'flatted';
@@ -37,6 +38,41 @@ import { WorkflowStaticDataService } from '@/workflows/workflow-static-data.serv
 
 // eslint-disable-next-line import-x/no-cycle
 import { executeErrorWorkflow } from './execute-error-workflow';
+
+function collectSubExecutionIds(runData: IRunData): string[] {
+	return Object.values(runData)
+		.flat()
+		.flatMap((taskData) => {
+			const id = taskData.metadata?.subExecution?.executionId;
+			return id ? [id] : [];
+		});
+}
+
+async function usedPrivateCredentialsInTree(
+	runData: IRunData,
+	executionRepository: ExecutionRepository,
+	visited = new Set<string>(),
+): Promise<boolean> {
+	const ownNodes = Object.values(runData).some((taskDataList) =>
+		taskDataList.some(
+			(taskData) =>
+				taskData.usedDynamicCredentials === true || taskData.attemptedDynamicCredentials === true,
+		),
+	);
+	if (ownNodes) return true;
+
+	const subIds = collectSubExecutionIds(runData).filter((id) => !visited.has(id));
+	if (subIds.length === 0) return false;
+
+	subIds.forEach((id) => visited.add(id));
+
+	const subExecutions = await executionRepository.find({
+		where: { id: In(subIds) },
+		select: ['id', 'usedPrivateCredentials'],
+	});
+
+	return subExecutions.some((e) => e.usedPrivateCredentials);
+}
 import { restoreBinaryDataId } from './restore-binary-data-id';
 import { saveExecutionProgress } from './save-execution-progress';
 import {
@@ -604,12 +640,9 @@ function hookFunctionsSave(
 			}
 
 			const runData = fullRunData.data?.resultData?.runData ?? {};
-			fullExecutionData.usedPrivateCredentials = Object.values(runData).some((taskDataList) =>
-				taskDataList.some(
-					(taskData) =>
-						taskData.usedDynamicCredentials === true ||
-						taskData.attemptedDynamicCredentials === true,
-				),
+			fullExecutionData.usedPrivateCredentials = await usedPrivateCredentialsInTree(
+				runData,
+				Container.get(ExecutionRepository),
 			);
 
 			await updateExistingExecution({
@@ -695,12 +728,9 @@ function hookFunctionsSaveWorker(
 			}
 
 			const runData = fullRunData.data?.resultData?.runData ?? {};
-			fullExecutionData.usedPrivateCredentials = Object.values(runData).some((taskDataList) =>
-				taskDataList.some(
-					(taskData) =>
-						taskData.usedDynamicCredentials === true ||
-						taskData.attemptedDynamicCredentials === true,
-				),
+			fullExecutionData.usedPrivateCredentials = await usedPrivateCredentialsInTree(
+				runData,
+				Container.get(ExecutionRepository),
 			);
 
 			// In scaling mode, worker saves execution without metadata
