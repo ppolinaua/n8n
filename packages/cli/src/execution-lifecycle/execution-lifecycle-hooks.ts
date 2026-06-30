@@ -38,6 +38,14 @@ import { WorkflowStaticDataService } from '@/workflows/workflow-static-data.serv
 
 // eslint-disable-next-line import-x/no-cycle
 import { executeErrorWorkflow } from './execute-error-workflow';
+import { restoreBinaryDataId } from './restore-binary-data-id';
+import { saveExecutionProgress } from './save-execution-progress';
+import {
+	determineFinalExecutionStatus,
+	prepareExecutionDataForDbUpdate,
+	updateExistingExecution,
+	updateExistingExecutionMetadata,
+} from './shared/shared-hook-functions';
 
 function collectSubExecutionIds(runData: IRunData): string[] {
 	return Object.values(runData)
@@ -73,14 +81,6 @@ async function usedPrivateCredentialsInTree(
 
 	return subExecutions.some((e) => e.usedPrivateCredentials);
 }
-import { restoreBinaryDataId } from './restore-binary-data-id';
-import { saveExecutionProgress } from './save-execution-progress';
-import {
-	determineFinalExecutionStatus,
-	prepareExecutionDataForDbUpdate,
-	updateExistingExecution,
-	updateExistingExecutionMetadata,
-} from './shared/shared-hook-functions';
 import { type ExecutionSaveSettings, toSaveSettings } from './to-save-settings';
 
 @Service()
