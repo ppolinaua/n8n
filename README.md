@@ -1,18 +1,19 @@
 ![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-# n8n - Secure Workflow Automation for Technical Teams
+# n8n – The Platform for AI Agents and Workflow Automation
 
-n8n is a workflow automation platform that gives technical teams the flexibility of code with the speed of no-code. With 400+ integrations, native AI capabilities, and a fair-code license, n8n lets you build powerful automations while maintaining full control over your data and deployments.
+Fair-code platform to build and deploy AI agents and workflows. Combine a visual canvas with custom code, run it self-hosted or in the cloud, and connect to 500+ integrations. AI automation you can trust with real work, from prototype to production.
 
 ![n8n.io - Screenshot](https://raw.githubusercontent.com/n8n-io/n8n/master/assets/n8n-screenshot-readme.png)
 
 ## Key Capabilities
 
-- **Code When You Need It**: Write JavaScript/Python, add npm packages, or use the visual interface
-- **AI-Native Platform**: Build AI agent workflows based on LangChain with your own data and models
-- **Full Control**: Self-host with our fair-code license or use our [cloud offering](https://app.n8n.cloud/login)
-- **Enterprise-Ready**: Advanced permissions, SSO, and air-gapped deployments
-- **Active Community**: 400+ integrations and 900+ ready-to-use [templates](https://n8n.io/workflows)
+- **AI-Native Automation Platform**: Build and operationalize AI workflows and multi-step agents using your own data, models, and tools—beyond simple prompt-response patterns
+- **Model Flexibility, No Lock-In**: Connect to OpenAI, Anthropic, Google, or open-source models and switch providers without rewriting your architecture
+- **From Prototype to Production**: Design complex, multi-step AI workflows with logic, tool use, human-in-the-loop approvals, and full observability—ready for real-world deployment
+- **Code When You Need It**: Combine visual building with JavaScript/Python and npm packages for full control over advanced AI behavior
+- **Enterprise-Ready AI**: Self-host or deploy in secure environments with role-based access, audit trails, and support for sensitive data behind the firewall
+- **Leverage What Already Exists**: 500+ integrations and 9,000+ templates to connect AI into real business systems without rebuilding everything from scratch
 
 ## Quick Start
 
