@@ -14,6 +14,7 @@ import {
 	getSendAndWaitConfig,
 	createEmail,
 	sendAndWaitWebhook,
+	buildSendAndWaitResponseMetadata,
 } from '../utils';
 
 describe('Send and Wait utils tests', () => {
@@ -222,6 +223,15 @@ describe('Send and Wait utils tests', () => {
 		});
 	});
 
+	describe('buildSendAndWaitResponseMetadata', () => {
+		it('returns respondedAt as an ISO-8601 timestamp', () => {
+			const metadata = buildSendAndWaitResponseMetadata();
+
+			expect(metadata.respondedAt).toEqual(expect.any(String));
+			expect(new Date(metadata.respondedAt as string).toISOString()).toBe(metadata.respondedAt);
+		});
+	});
+
 	describe('sendAndWaitWebhook', () => {
 		it('should handle approved webhook', async () => {
 			mockWebhookFunctions.getRequestObject.mockReturnValue({
@@ -232,7 +242,7 @@ describe('Send and Wait utils tests', () => {
 
 			expect(result).toEqual({
 				webhookResponse: expect.any(String),
-				workflowData: [[{ json: { data: { approved: true } } }]],
+				workflowData: [[{ json: { data: { approved: true, respondedAt: expect.any(String) } } }]],
 			});
 		});
 
@@ -245,7 +255,7 @@ describe('Send and Wait utils tests', () => {
 
 			expect(result).toEqual({
 				webhookResponse: expect.any(String),
-				workflowData: [[{ json: { data: { approved: false } } }]],
+				workflowData: [[{ json: { data: { approved: false, respondedAt: expect.any(String) } } }]],
 			});
 		});
 
@@ -325,7 +335,9 @@ describe('Send and Wait utils tests', () => {
 
 			const result = await sendAndWaitWebhook.call(mockWebhookFunctions);
 
-			expect(result.workflowData).toEqual([[{ json: { data: { text: 'test value' } } }]]);
+			expect(result.workflowData).toEqual([
+				[{ json: { data: { text: 'test value', respondedAt: expect.any(String) } } }],
+			]);
 		});
 
 		it('should handle customForm GET webhook', async () => {
@@ -474,7 +486,9 @@ describe('Send and Wait utils tests', () => {
 
 			const result = await sendAndWaitWebhook.call(mockWebhookFunctions);
 
-			expect(result.workflowData).toEqual([[{ json: { data: { 'test 1': 'test value' } } }]]);
+			expect(result.workflowData).toEqual([
+				[{ json: { data: { 'test 1': 'test value', respondedAt: expect.any(String) } } }],
+			]);
 		});
 
 		it('should return noWebhookResponse if method GET and user-agent is bot', async () => {

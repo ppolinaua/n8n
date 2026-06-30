@@ -26,7 +26,7 @@ import {
 	createEmailBodyWithN8nAttribution,
 	createEmailBodyWithoutN8nAttribution,
 } from './email-templates';
-import type { IEmail } from './interfaces';
+import type { IEmail, ISendAndWaitResponseMetadata } from './interfaces';
 
 export type SendAndWaitConfig = {
 	title: string;
@@ -349,6 +349,14 @@ const isMicrosoftPreviewService = (userAgent?: string) => {
 	return ['teams', 'skype', 'preview'].some((str) => userAgent.includes(str));
 };
 
+/**
+ * Builds the additive metadata merged into every resumed HITL `data` object.
+ * Currently just the response timestamp (the time n8n received the response).
+ */
+export function buildSendAndWaitResponseMetadata(): ISendAndWaitResponseMetadata {
+	return { respondedAt: new Date().toISOString() };
+}
+
 export async function sendAndWaitWebhook(this: IWebhookFunctions) {
 	const method = this.getRequestObject().method;
 	const res = this.getResponseObject();
@@ -405,7 +413,18 @@ export async function sendAndWaitWebhook(this: IWebhookFunctions) {
 
 			return {
 				webhookResponse: ACTION_RECORDED_PAGE,
-				workflowData: [[{ json: { data: { text: data[INPUT_FIELD_IDENTIFIER] } } }]],
+				workflowData: [
+					[
+						{
+							json: {
+								data: {
+									text: data[INPUT_FIELD_IDENTIFIER],
+									...buildSendAndWaitResponseMetadata(),
+								},
+							},
+						},
+					],
+				],
 			};
 		}
 	}
@@ -461,7 +480,8 @@ export async function sendAndWaitWebhook(this: IWebhookFunctions) {
 			delete json.submittedAt;
 			delete json.formMode;
 
-			returnItem.json = { data: json };
+			// Spread metadata first so a user-defined form field never gets clobbered.
+			returnItem.json = { data: { ...buildSendAndWaitResponseMetadata(), ...json } };
 
 			return {
 				webhookResponse: ACTION_RECORDED_PAGE,
@@ -474,7 +494,7 @@ export async function sendAndWaitWebhook(this: IWebhookFunctions) {
 	const approved = query.approved === 'true';
 	return {
 		webhookResponse: ACTION_RECORDED_PAGE,
-		workflowData: [[{ json: { data: { approved } } }]],
+		workflowData: [[{ json: { data: { approved, ...buildSendAndWaitResponseMetadata() } } }]],
 	};
 }
 

@@ -14,3 +14,9 @@ export interface IEmail {
 	htmlBody?: string;
 	attachments?: IDataObject[];
 }
+
+/** Additive, all-optional metadata merged into the resumed HITL `data` object. */
+export interface ISendAndWaitResponseMetadata {
+	/** ISO-8601 timestamp of when n8n received the response. */
+	respondedAt?: string;
+}
